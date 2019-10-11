@@ -13,8 +13,8 @@ The template header of "gtaskque.h" to execute registered tasks simultaneously.
 #### Example
 ``` c++
 // template <typename T, typename E>
-// T: the data type that an executor handles
-// E: the data type of the executor
+// T: type of data with which an executor handles
+// E: data type of the executor
 template <typename T, typename E>
 class TestExecutor: public GExecutorInterface<T,E> {
 public:
