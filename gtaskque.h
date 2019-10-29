@@ -32,12 +32,12 @@
 #include <pthread.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <Windows.h>
 #include <process.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 typedef HANDLE			MUTEX_TYPE;
 typedef HANDLE			THREADHANDLE_TYPE;
 #elif __linux__
@@ -98,7 +98,7 @@ protected:
 template <typename T, typename E>
 class GTaskQue {
 private:
-#ifdef WIN32
+#ifdef _WIN32
 	static unsigned WINAPI thread_function_execution(void *_arg) {
 #elif __linux__
 	static void * thread_function_execution(void *_arg) {
@@ -111,7 +111,7 @@ private:
 		return 0;
 	}
 
-#ifdef WIN32
+#ifdef _WIN32
 	static unsigned WINAPI thread_function_autoexecution(void *_arg) {
 #elif __linux__
 	static void * thread_function_autoexecution(void *_arg) {
@@ -147,7 +147,7 @@ private:
 					que->executeBatch();
 					//////////////////////////////////
 
-#ifdef WIN32
+#ifdef _WIN32
 					Sleep(1);
 #elif __linux__
 					usleep(1*USLEEP_SCALE_FACTOR);
@@ -159,7 +159,7 @@ private:
 			}
 			
 			if (que->delay_between_batch != 0) {
-#ifdef WIN32
+#ifdef _WIN32
 				Sleep(que->delay_between_batch);
 #elif __linux__
 				usleep(que->delay_between_batch * 
@@ -191,7 +191,7 @@ private:
 	GExecutorInterface<T,E>*executor;
 	size_t			size_back_buffer;
 
-#ifdef WIN32
+#ifdef _WIN32
 	HANDLE			mutex;
 	HANDLE			thread_handle_autoexecution;
 #elif __linux__
@@ -247,7 +247,7 @@ private:
 
 template <typename T, typename E>
 void GTaskQue<T,E>::initialize() {
-#ifdef WIN32
+#ifdef _WIN32
 	thread_handle_autoexecution = 0;
 #elif __linux__
 	thread_handle_autoexecution = 0;
@@ -264,7 +264,7 @@ void GTaskQue<T,E>::createMutex() {
 	if(is_mutex_created) {
 		return;
 	}
-#ifdef WIN32
+#ifdef _WIN32
 	mutex = CreateMutex(NULL, FALSE, NULL);
 #elif __linux__
 	if (pthread_mutex_init(&mutex, NULL) != 0) {
@@ -277,7 +277,7 @@ void GTaskQue<T,E>::createMutex() {
 template <typename T, typename E>
 void GTaskQue<T,E>::destroyMutex() {
 	if (is_mutex_created) {
-#ifdef WIN32
+#ifdef _WIN32
 		CloseHandle(mutex);
 #elif __linux__
 		pthread_mutex_destroy(&mutex);
@@ -340,8 +340,10 @@ GTaskQue<T,E>::~GTaskQue() {
 	// check the code, maybe some problems in quitThread()
 
 	if (executor) {
-		delete executor;
-		executor = nullptr;
+		if(!executor->isAttributeDelettionAutomatically()) {
+			delete executor;
+			executor = nullptr;
+		}
 	}
 	
 	destroyMutex();
@@ -373,7 +375,7 @@ void GTaskQue<T,E>::quitThread() {
 	doAutoExecution(false);
 
 	while (is_autoexecution_thread_running) {
-#ifdef WIN32
+#ifdef _WIN32
 		Sleep(1);
 #elif __linux__
 		usleep(1*USLEEP_SCALE_FACTOR);
@@ -510,7 +512,7 @@ int GTaskQue<T,E>::doAutoExecution(const bool &_v) {
 		return 0;
 	}
 	
-#ifdef WIN32
+#ifdef _WIN32
 	thread_handle_autoexecution =
 		(HANDLE)_beginthreadex(NULL, 0, thread_function_autoexecution, this, 0, NULL);
 #elif __linux__
@@ -544,7 +546,7 @@ int GTaskQue<T,E>::doExecution() {
 		return -1;
 	}
 
-#ifdef WIN32
+#ifdef _WIN32
 	thread_handle_autoexecution =
 		(HANDLE)_beginthreadex(NULL, 0, thread_function_execution, this, 0, NULL);
 #elif __linux__
@@ -565,7 +567,7 @@ bool GTaskQue<T,E>::areAllTasksExecuted() const {
 template <typename T, typename E>
 void GTaskQue<T,E>::mutex_lock() {
 	if (is_mutex_created) {
-#ifdef WIN32
+#ifdef _WIN32
 		WaitForSingleObject(mutex, INFINITE);
 #elif __linux__
 		pthread_mutex_lock(&mutex);
@@ -576,7 +578,7 @@ void GTaskQue<T,E>::mutex_lock() {
 template <typename T, typename E>
 void GTaskQue<T,E>::mutex_lock() const {
 	if (is_mutex_created) {
-#ifdef WIN32
+#ifdef _WIN32
 		WaitForSingleObject(mutex, INFINITE);
 #elif __linux__
 		pthread_mutex_lock(&mutex);
@@ -587,7 +589,7 @@ void GTaskQue<T,E>::mutex_lock() const {
 template <typename T, typename E>
 void GTaskQue<T,E>::mutex_unlock() {
 	if (is_mutex_created) {
-#ifdef WIN32
+#ifdef _WIN32
 		ReleaseMutex(mutex);
 #elif __linux__
 		pthread_mutex_unlock(&mutex);
@@ -598,7 +600,7 @@ void GTaskQue<T,E>::mutex_unlock() {
 template <typename T, typename E>
 void GTaskQue<T,E>::mutex_unlock() const {
 	if (is_mutex_created) {
-#ifdef WIN32
+#ifdef _WIN32
 		ReleaseMutex(mutex);
 #elif __linux__
 		pthread_mutex_unlock(&mutex);
@@ -646,7 +648,7 @@ int GTaskQue<T,E>::executeBatch() {
 		index_executor++;
 		
 		if (delay_in_batch != 0) {
-#ifdef WIN32
+#ifdef _WIN32
 			Sleep(delay_in_batch);
 #elif __linux__
 			usleep(delay_in_batch*USLEEP_SCALE_FACTOR);
