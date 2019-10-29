@@ -86,7 +86,7 @@ protected:
 	GExecutorInterface &operator=(const GExecutorInterface &) { 
 		return *this; }
 	// blocking call
-	virtual int execute(T &_arg) { return 0; }
+	virtual int execute(T &_arg) const { return 0; }
 };
 
 #define DEFAULT_SIZE_BACK_BUFFER 100
@@ -188,7 +188,7 @@ private:
 	// This flag will be changed after calling quitThread()
 	std::atomic<bool>	is_quit_requested;
 
-	GExecutorInterface<T,E>*executor;
+	const GExecutorInterface<T,E> *executor;
 	size_t			size_back_buffer;
 
 #ifdef _WIN32
@@ -211,7 +211,7 @@ private:
 	virtual GTaskQue<T,E> &operator=(const GTaskQue<T,E> &);
 public:
 	GTaskQue(
-		GExecutorInterface<T,E> *_executor,
+		const GExecutorInterface<T,E> *_executor,
 		const size_t _size_back_buffer=DEFAULT_SIZE_BACK_BUFFER);
 	virtual ~GTaskQue();
 public:
@@ -289,7 +289,7 @@ void GTaskQue<T,E>::destroyMutex() {
 
 template <typename T, typename E>
 GTaskQue<T,E>::GTaskQue(
-	GExecutorInterface<T,E> *_executor, 
+	const GExecutorInterface<T,E> *_executor,
 	const size_t _size_back_buffer) {
 	assert(_executor);
 	if (!_executor) {
@@ -339,10 +339,11 @@ GTaskQue<T,E>::~GTaskQue() {
 //	}
 	// check the code, maybe some problems in quitThread()
 
-	if (executor) {
-		delete executor;
-		executor = nullptr;
-	}
+	// if GExecutorInterface is not const, the below code is available
+//	if (executor) {
+//		delete executor;
+//		executor = nullptr;
+//	}
 	
 	destroyMutex();
 }
