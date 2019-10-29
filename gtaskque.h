@@ -340,10 +340,8 @@ GTaskQue<T,E>::~GTaskQue() {
 	// check the code, maybe some problems in quitThread()
 
 	if (executor) {
-		if(!executor->isAttributeDeletionAutomatically()) {
-			delete executor;
-			executor = nullptr;
-		}
+		delete executor;
+		executor = nullptr;
 	}
 	
 	destroyMutex();
