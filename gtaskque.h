@@ -340,7 +340,7 @@ GTaskQue<T,E>::~GTaskQue() {
 	// check the code, maybe some problems in quitThread()
 
 	if (executor) {
-		if(!executor->isAttributeDelettionAutomatically()) {
+		if(!executor->isAttributeDeletionAutomatically()) {
 			delete executor;
 			executor = nullptr;
 		}
