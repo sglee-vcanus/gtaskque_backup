@@ -534,8 +534,8 @@ int GTaskQue<T,E>::doExecution() {
 		throw("There is no task");
 	}
 
-	assert(!this->is_autoexecution_running);
-	if (this->is_autoexecution_running) {
+	assert(!this->is_autoexecution_thread_running);
+	if (this->is_autoexecution_thread_running) {
 		throw("Auto-execution is running, stop auto-execution first");
 		return -1;
 	}
